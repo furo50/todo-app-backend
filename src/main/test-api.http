@@ -1,0 +1,23 @@
+### GET alle Todos
+GET http://localhost:8080/api/todos
+
+### POST neues Todo erstellen
+POST http://localhost:8080/api/todos
+Content-Type: application/json
+
+{
+  "text": "Mein erstes Backend-Todo",
+  "completed": false
+}
+
+### PUT Todo aktualisieren (ändere ID zu deiner Todo-ID)
+PUT http://localhost:8080/api/todos/1
+Content-Type: application/json
+
+{
+  "text": "Aktualisiertes Todo",
+  "completed": true
+}
+
+### DELETE Todo löschen (ändere ID)
+DELETE http://localhost:8080/api/todos/1
