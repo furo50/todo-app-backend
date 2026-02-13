@@ -1,5 +1,6 @@
 package com.mehmet.furkan.ozer.todo_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -15,11 +16,18 @@ public class Todo {
     private String text;
 
     @Column(nullable = false)
-    private Boolean completed = false;
+    private boolean completed = false;  // Klein geschrieben, nicht Boolean
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    // NEU: Beziehung zu User
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    private User user;
+
+    // Constructors
     public Todo() {
         this.createdAt = LocalDateTime.now();
     }
@@ -30,6 +38,7 @@ public class Todo {
         this.createdAt = LocalDateTime.now();
     }
 
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -46,11 +55,11 @@ public class Todo {
         this.text = text;
     }
 
-    public Boolean getCompleted() {
+    public boolean isCompleted() {  // isCompleted für primitive boolean
         return completed;
     }
 
-    public void setCompleted(Boolean completed) {
+    public void setCompleted(boolean completed) {
         this.completed = completed;
     }
 
@@ -60,5 +69,14 @@ public class Todo {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    // NEU: User Getter/Setter
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
