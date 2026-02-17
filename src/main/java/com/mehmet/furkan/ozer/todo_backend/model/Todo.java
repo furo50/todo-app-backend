@@ -55,7 +55,7 @@ public class Todo {
         this.text = text;
     }
 
-    public boolean isCompleted() {  // isCompleted für primitive boolean
+    public boolean getCompleted() {
         return completed;
     }
 

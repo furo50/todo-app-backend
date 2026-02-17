@@ -1,19 +1,25 @@
 # Todo App - Spring Boot Backend
 
-REST API für die Todo-App. Spring Boot 3 mit PostgreSQL und JPA/Hibernate.
+REST API für die Todo-App. Spring Boot 3 mit PostgreSQL, JPA/Hibernate und JWT Authentication.
 
 ## Features
 
-- RESTful CRUD-Operationen
+- RESTful CRUD-Operationen für Todos
+- JWT-basierte Authentication
+- User Registration & Login
+- BCrypt Password Hashing
+- User-Isolation (jeder sieht nur seine eigenen Todos)
 - PostgreSQL Integration
 - JPA/Hibernate ORM
+- Spring Security
 - CORS für Frontend
-- Auto Schema Generation
 
 ## Tech Stack
 
 - Java 21
 - Spring Boot 3.5.10
+- Spring Security
+- JWT (jjwt 0.12.3)
 - Spring Data JPA
 - PostgreSQL 18
 - Maven
@@ -52,27 +58,68 @@ Backend läuft auf `http://localhost:8080`
 ```
 src/main/java/.../todo_backend/
 ├── controller/
-│   └── TodoController.java      # REST Endpoints
+│   ├── AuthController.java      # Login & Signup Endpoints
+│   └── TodoController.java      # Todo CRUD Endpoints
+├── dto/
+│   ├── AuthResponse.java        # Token Response
+│   ├── LoginRequest.java        # Login Request Body
+│   └── SignupRequest.java       # Signup Request Body
 ├── model/
-│   └── Todo.java                # Entity
+│   ├── Todo.java                # Todo Entity
+│   └── User.java                # User Entity
 ├── repository/
-│   └── TodoRepository.java      # JPA Repository
+│   ├── TodoRepository.java      # Todo JPA Repository
+│   └── UserRepository.java      # User JPA Repository
+├── security/
+│   ├── config/
+│   │   └── SecurityConfig.java          # Spring Security Config
+│   ├── jwt/
+│   │   ├── JwtAuthenticationFilter.java # JWT Request Filter
+│   │   └── JwtTokenProvider.java        # Token Generation & Validation
+│   └── service/
+│       └── CustomUserDetailsService.java # User laden für Spring Security
 └── TodoBackendApplication.java
 ```
 
 ## API Endpoints
 
+### Auth (öffentlich)
+
 | Methode | Endpoint | Beschreibung |
 |---------|----------|--------------|
-| GET | `/api/todos` | Alle Todos |
+| POST | `/api/auth/signup` | User registrieren |
+| POST | `/api/auth/login` | User einloggen, Token erhalten |
+
+### Todos (JWT erforderlich)
+
+| Methode | Endpoint | Beschreibung |
+|---------|----------|--------------|
+| GET | `/api/todos` | Alle Todos des Users |
 | POST | `/api/todos` | Todo erstellen |
 | PUT | `/api/todos/{id}` | Todo updaten |
 | DELETE | `/api/todos/{id}` | Todo löschen |
 
-**Beispiel Request:**
+### Beispiel Flow:
+
+**1. Registrieren:**
+```bash
+curl -X POST http://localhost:8080/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"username":"max","email":"max@example.com","password":"password123"}'
+```
+
+**2. Einloggen:**
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"max","password":"password123"}'
+```
+
+**3. Todo erstellen (mit Token):**
 ```bash
 curl -X POST http://localhost:8080/api/todos \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer DEIN_TOKEN" \
   -d '{"text":"Neue Aufgabe","completed":false}'
 ```
 
@@ -80,11 +127,20 @@ curl -X POST http://localhost:8080/api/todos \
 
 Hibernate erstellt automatisch:
 ```sql
+users (
+  id BIGSERIAL PRIMARY KEY,
+  username VARCHAR(255) UNIQUE,
+  email VARCHAR(255) UNIQUE,
+  password VARCHAR(255),
+  created_at TIMESTAMP
+)
+
 todos (
   id BIGSERIAL PRIMARY KEY,
   text VARCHAR(255),
   completed BOOLEAN,
-  created_at TIMESTAMP
+  created_at TIMESTAMP,
+  user_id BIGINT REFERENCES users(id)
 )
 ```
 
@@ -96,9 +152,8 @@ CORS konfiguriert für `localhost:5173`
 ## Geplante Erweiterungen
 
 - [ ] Input Validation
-- [ ] Error Handling
+- [ ] Error Handling verbessern
 - [ ] Unit Tests
-- [ ] Authentication
 - [ ] Docker Support
 
 ---
